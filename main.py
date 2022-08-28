@@ -18,10 +18,11 @@ app = FastAPI(
     middleware=[
         Middleware(
             AuthenticationMiddleware,
-            backend=AuthBasicOrBearerBackend(),
+            backend=AuthBasicOrBearerBackend(
+                exclud_routes={"/docs", "/redoc", "/openapi.json"}
+            ),
             on_error=lambda conn, exc: JSONResponse(
-                {"detail": str(exc)},
-                status_code=401,
+                {"detail": str(exc)}, status_code=401,
             ),
         ),
     ],

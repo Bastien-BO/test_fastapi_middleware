@@ -16,6 +16,17 @@ class AuthBasicOrBearerBackend(AuthenticationBackend):
     Authentication middlewares
     """
 
+    def __init__(self, exclud_routes=None):
+        """
+        Initialise Authentication middleware
+        :param exclud_routes: set of full path routes
+        that doesn't need authentication
+        """
+        if exclud_routes is None:
+            self.exclud_routes = set()
+
+        self.exclud_routes: set = exclud_routes
+
     async def authenticate(self, conn) \
             -> tuple[AuthCredentials, AuthenticationUser] | None:
         """
@@ -23,10 +34,10 @@ class AuthBasicOrBearerBackend(AuthenticationBackend):
         :param conn: Connexion object
         :return: AuthCredentials, SimpleUserTest
         """
+        # If no authentication headers given
         if "Authorization" not in conn.headers:
-            # If no authentication header is present
-            if conn.scope.get("path") in {"/docs", "/redoc", "/openapi.json"}:
-                # No authentication needed
+            if conn.scope.get("path") in self.exclud_routes:
+                # No authentication needed for excluded routes
                 return
             else:
                 raise AuthenticationError('No authentication headers given')
@@ -55,7 +66,10 @@ class AuthBasicOrBearerBackend(AuthenticationBackend):
                     }
                 else:
                     print("error should raise")
-                    raise AuthenticationError("You need to provide a username")
+                    raise AuthenticationError(
+                        "You need to provide an authentication "
+                        "method to access this route"
+                    )
             else:
                 raise AuthenticationError(
                     "Authentication type is not supported"
