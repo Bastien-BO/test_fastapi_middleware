@@ -3,17 +3,20 @@ from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.security import HTTPBasic, HTTPBearer
+from fastapi.security.http import HTTPBase
+#from fastapi.openapi.models import HTTPBase
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.responses import JSONResponse
 import uvicorn
 
+from app.internal.depends.authorize import HTTPBaseLight
 from app.internal.middlewares.auth import AuthBasicOrBearerBackend
 
 app = FastAPI(
     dependencies=[
-        Depends(HTTPBasic(auto_error=False)),
-        Depends(HTTPBearer(auto_error=False)),
+        Depends(HTTPBaseLight(scheme="basic")),
+        Depends(HTTPBaseLight(scheme="bearer")),
     ],
     middleware=[
         Middleware(
@@ -26,6 +29,7 @@ app = FastAPI(
             ),
         ),
     ],
+
 )
 
 
